@@ -3,9 +3,6 @@ import jwt from "jsonwebtoken";
 import { Model } from "mongoose";
 import { COOKIE_KEY, ROLE } from "../configs/constants";
 import { apiResponse } from "../helpers";
-import Customer from "../models/customer";
-import Retailer from "../models/retailer";
-import SubAdmin from "../models/sub-admin";
 import SuperAdmin from "../models/super-admin";
 import { IApiRequest, IJWTQuery } from "../types";
 
@@ -31,21 +28,6 @@ export const authAndPermissionCheck =
         switch (decoded.role) {
           case ROLE.SUPER_ADMIN:
             model = SuperAdmin;
-            break;
-          case ROLE.RETAILER:
-            model = Retailer;
-            break;
-          case ROLE.SUB_ADMIN:
-            if (!ott) {
-              query.token = token;
-            }
-            model = SubAdmin;
-            break;
-          case ROLE.CUSTOMER:
-            if (!ott) {
-              query.token = token;
-            }
-            model = Customer;
             break;
           default:
             return apiResponse(res, 401, false, "Unauthorized!");

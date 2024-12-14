@@ -3,10 +3,7 @@ import { Request, Response } from "express";
 import Joi from "joi";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
-import path from "path";
-import puppeteer from "puppeteer";
 import { APP_SECRET } from "../configs/constants";
-import { getInvoiceTemplatePdf } from "../templates/invoice";
 import { DataItem } from "../types/index";
 
 const objectIdExtension = (Joi: any) => ({
@@ -2306,65 +2303,6 @@ export const countryData = [
     currency: "SRD",
   },
 ];
-
-export const htmlToPdf = async ({
-  customerInfo = {},
-  purchasedItems = [],
-  invoiceMetadata = {},
-  paymentInfo = {},
-}: {
-  customerInfo: any;
-  purchasedItems: any;
-  invoiceMetadata: any;
-  paymentInfo: any;
-}) => {
-  try {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-    const page = await browser.newPage();
-
-    const template = getInvoiceTemplatePdf({ customerInfo, purchasedItems, invoiceMetadata, paymentInfo });
-    await page.setContent(template, { waitUntil: "networkidle2" });
-
-    // await page.waitForFunction("document.fonts.ready");
-
-    // Wait for the image to load completely
-    await page.evaluate(() => {
-      return new Promise<void>((resolve) => {
-        const logoImg = document.querySelector(
-          "img[src='https://stampezee-s3.s3.ap-south-1.amazonaws.com/default/logo.png']"
-        ) as HTMLImageElement;
-        const thankImg = document.querySelector(
-          "img[src='https://stampezee-s3.s3.ap-south-1.amazonaws.com/default/logo.png']"
-        ) as HTMLImageElement;
-        if (logoImg && logoImg.complete && thankImg && thankImg.complete) {
-          resolve();
-        } else {
-          logoImg?.addEventListener("load", () => resolve());
-          logoImg?.addEventListener("error", () => resolve());
-          thankImg?.addEventListener("load", () => resolve());
-          thankImg?.addEventListener("error", () => resolve());
-        }
-      });
-    });
-
-    await page.evaluate(() => {
-      document.body.style.backgroundColor = "#ffffff"; // Change to the desired color
-    });
-
-    await page.pdf({
-      path: path.join(process.cwd(), "/src/features/enroll-subscription/temp/invoice.pdf"),
-      printBackground: true,
-      waitForFonts: true,
-      format: "A4",
-    });
-    await browser.close();
-  } catch (error) {
-    throw error;
-  }
-};
 
 export function getSlugCountMap(data: DataItem[]): Record<string, number> {
   const slugCountMap: Record<string, number> = {};
