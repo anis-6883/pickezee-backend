@@ -6,8 +6,7 @@ import logger from "morgan";
 import errorMiddleware from "../middlewares/errorMiddleware";
 import verifyApiKeyHeader from "../middlewares/verifyApiKeyHeader";
 import adminRoutes from "../routes/admin.routes";
-import mobileRoutes from "../routes/mobile.routes";
-import webRoutes from "../routes/web.routes";
+import clientRoutes from "../routes/client.routes";
 import config from "./config";
 
 const app = express();
@@ -24,13 +23,12 @@ app.use(express.urlencoded({ extended: true, limit: "100kb" }));
 
 // Home Route
 app.get("/", (req, res) => {
-  return res.status(200).json({ status: true, message: "Assalamu Alaikum! Welcome to Try E-commerce." });
+  return res.status(200).json({ status: true, message: "Assalamu Alaikum! Welcome to Pickezee." });
 });
 
 // Main Routes
-app.use("/api/web", webRoutes); // web
 app.use(verifyApiKeyHeader);
-app.use("/api/v1", mobileRoutes); // mobile
+app.use("/api/v1", clientRoutes); // mobile
 app.use("/api/secret-root/admin", adminRoutes); // admin
 
 // 404 Route

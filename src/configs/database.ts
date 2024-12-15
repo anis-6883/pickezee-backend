@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
+import { Sequelize } from "sequelize";
 
-const connectToDatabase = async (databaseURL: string) => {
+export const connectToMongo = async (databaseURL: string) => {
   try {
     await mongoose.connect(databaseURL);
     console.log("Connected to MongoDB Database!");
@@ -10,4 +11,17 @@ const connectToDatabase = async (databaseURL: string) => {
   }
 };
 
-export default connectToDatabase;
+export const sequelize = new Sequelize(process.env.POSTGRES_URI, {
+  dialect: "postgres",
+  logging: false,
+});
+
+export const connectToPostgres = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("Connected to PostgreSQL Database!");
+  } catch (error) {
+    console.error("Error connecting to PostgreSQL:", error);
+    process.exit(1);
+  }
+};
