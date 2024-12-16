@@ -7,17 +7,20 @@ import errorMiddleware from "../middlewares/errorMiddleware";
 import verifyApiKeyHeader from "../middlewares/verifyApiKeyHeader";
 import adminRoutes from "../routes/admin.routes";
 import clientRoutes from "../routes/client.routes";
-import config from "./config";
 
 const app = express();
-const env = process.env.NODE_ENV || "development";
 
 // Batteries Include
 app.use(helmet());
 app.use(logger("dev"));
 app.use(cookieParser());
 app.use(express.static("public"));
-app.use(cors(config[env].corsOptions));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGINS.split(",").map((origin) => origin.trim()),
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: true, limit: "100kb" }));
 
@@ -28,7 +31,7 @@ app.get("/", (req, res) => {
 
 // Main Routes
 app.use(verifyApiKeyHeader);
-app.use("/api/v1", clientRoutes); // mobile
+app.use("/api/v1", clientRoutes); // mobile & web
 app.use("/api/secret-root/admin", adminRoutes); // admin
 
 // 404 Route

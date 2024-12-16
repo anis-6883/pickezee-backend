@@ -4,7 +4,6 @@ import Joi from "joi";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { APP_SECRET } from "../configs/constants";
-import { DataItem } from "../types/index";
 
 const objectIdExtension = (Joi: any) => ({
   type: "objectId",
@@ -2303,15 +2302,3 @@ export const countryData = [
     currency: "SRD",
   },
 ];
-
-export function getSlugCountMap(data: DataItem[]): Record<string, number> {
-  const slugCountMap: Record<string, number> = {};
-
-  data.forEach((item) => {
-    item.slugs.forEach((slug) => {
-      slugCountMap[slug] = (slugCountMap[slug] || 0) + 1;
-    });
-  });
-
-  return slugCountMap;
-}
