@@ -1,5 +1,4 @@
 import { Request } from "express";
-import mongoose from "mongoose";
 
 export interface IConfig {
   [key: string]: {
@@ -16,19 +15,20 @@ export interface IConfig {
 }
 
 export interface IUser {
-  _id: mongoose.Types.ObjectId;
+  id: string;
+  image: string;
   name: string;
-  postalCode?: string;
-  city: string;
-  phone: string;
-  dialCode: string;
   email: string;
   password: string;
-  image: string;
+  emailVerified: boolean;
+  dialCode: string;
+  phone: string;
+  phoneVerified: boolean;
+  provider: "email" | "phone" | "google" | "facebook";
   status: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  provider: string;
+  role: "user" | "admin";
+  gender: "male" | "female" | "others" | "";
+  dob: string;
 }
 
 export interface IApiRequest extends Request {

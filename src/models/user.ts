@@ -1,21 +1,5 @@
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
-
-export interface IUser {
-  id: string;
-  image: string;
-  name: string;
-  email: string;
-  password: string;
-  emailVerified: boolean;
-  dialCode: string;
-  phone: string;
-  phoneVerified: boolean;
-  provider: "email" | "phone" | "google" | "facebook";
-  status: boolean;
-  role: "user" | "admin";
-  gender: "male" | "female" | "others";
-  dob: string;
-}
+import { IUser } from "../configs/interfaces";
 
 interface UserCreationAttributes extends Optional<IUser, "id"> {}
 
@@ -32,7 +16,7 @@ class User extends Model<IUser, UserCreationAttributes> implements IUser {
   public provider: "email" | "phone" | "google" | "facebook";
   public status: boolean;
   public role: "user" | "admin";
-  public gender: "male" | "female" | "others";
+  public gender: "male" | "female" | "others" | "";
   public dob: string;
 
   public readonly createdAt: Date;
@@ -69,11 +53,11 @@ export const initializeUser = (sequelize: Sequelize) => {
       },
       dialCode: {
         type: DataTypes.STRING,
-        allowNull: false,
+        defaultValue: "",
       },
       phone: {
         type: DataTypes.STRING,
-        allowNull: false,
+        defaultValue: "",
       },
       phoneVerified: {
         type: DataTypes.BOOLEAN,
@@ -92,18 +76,24 @@ export const initializeUser = (sequelize: Sequelize) => {
         allowNull: false,
       },
       gender: {
-        type: DataTypes.ENUM("male", "female", "others"),
-        allowNull: false,
+        type: DataTypes.ENUM("male", "female", "others", ""),
+        defaultValue: "",
       },
       dob: {
         type: DataTypes.STRING,
-        allowNull: false,
+        defaultValue: "",
       },
     },
     {
       modelName: "User",
       tableName: "users",
       sequelize,
+      indexes: [
+        {
+          unique: true,
+          fields: ["email"],
+        },
+      ],
     }
   );
   return User;
