@@ -18,6 +18,7 @@ class User extends Model<IUser, UserCreationAttributes> implements IUser {
   public role: "user" | "admin";
   public gender: "male" | "female" | "others" | "";
   public dob: string;
+  public token: string;
 
   public readonly createdAt: Date;
   public readonly updatedAt: Date;
@@ -81,6 +82,10 @@ export const initializeUser = (sequelize: Sequelize) => {
       },
       dob: {
         type: DataTypes.STRING,
+        defaultValue: "",
+      },
+      token: {
+        type: DataTypes.TEXT,
         defaultValue: "",
       },
     },

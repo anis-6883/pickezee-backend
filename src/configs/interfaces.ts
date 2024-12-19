@@ -29,6 +29,7 @@ export interface IUser {
   role: "user" | "admin";
   gender: "male" | "female" | "others" | "";
   dob: string;
+  token: string;
 }
 
 export interface IApiRequest extends Request {
@@ -38,7 +39,4 @@ export interface IApiRequest extends Request {
   role: string;
 }
 
-export interface IJWTQuery {
-  email: string;
-  token?: string;
-}
+export type IJWTQuery = { email: string; token?: string };
