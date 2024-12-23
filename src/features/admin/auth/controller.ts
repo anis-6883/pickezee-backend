@@ -4,7 +4,7 @@ import { ROLE } from "../../../configs/constants";
 import { IApiRequest } from "../../../configs/interfaces";
 import { apiResponse, asyncHandler, exclude, generateSignature } from "../../../helpers/index";
 import User from "../../../models/user";
-import { adminChangePasswordSchema, loginSchema, superAdminRegisterSchema, updateAdminSchema } from "./validation";
+import { adminChangePasswordSchema, adminRegisterSchema, loginSchema, updateAdminSchema } from "./validation";
 
 const ALARM_EXPIRE_TIME = 60 * 60 * 24 * 29 * 1000; // 29 Days
 
@@ -15,10 +15,10 @@ const ALARM_EXPIRE_TIME = 60 * 60 * 24 * 29 * 1000; // 29 Days
  * @returns {Promise<void>} - A promise that resolves when the response is sent.
  */
 export const adminRegister = asyncHandler(async (req: Request, res: Response) => {
-  const result = await superAdminRegisterSchema.validateAsync(req.body);
+  const result = await adminRegisterSchema.validateAsync(req.body);
 
   const existingAdmin = await User.findOne({ where: { email: result.email } });
-  if (existingAdmin) return apiResponse(res, 409, false, "This Super Admin already exists!");
+  if (existingAdmin) return apiResponse(res, 409, false, "This Admin already exists!");
 
   result.password = await bcrypt.hash(result.password, 10);
   result.role = ROLE.ADMIN;
@@ -27,7 +27,7 @@ export const adminRegister = asyncHandler(async (req: Request, res: Response) =>
 
   await User.create(result);
 
-  return apiResponse(res, 201, true, "Super admin have registered successfully!");
+  return apiResponse(res, 201, true, "Admin have registered successfully!");
 });
 
 /**
@@ -53,7 +53,7 @@ export const adminLogin = asyncHandler(async (req: Request, res: Response) => {
   admin.token = token;
   await admin.save({ fields: ["token"] });
 
-  return apiResponse(res, 200, true, "Super admin login successfully!", {
+  return apiResponse(res, 200, true, "Admin login successfully!", {
     ...data,
     refreshToken,
     expiresIn: new Date().setTime(new Date().getTime() + ALARM_EXPIRE_TIME),
@@ -68,7 +68,7 @@ export const adminLogin = asyncHandler(async (req: Request, res: Response) => {
  */
 export const adminProfile = asyncHandler(async (req: IApiRequest, res: Response) => {
   if (!req.user) return apiResponse(res, 401, false, "Unauthorized Request!");
-  return apiResponse(res, 200, true, "Super admin profile fetched successfully!", req.user);
+  return apiResponse(res, 200, true, "Admin profile fetched successfully!", req.user);
 });
 
 /**

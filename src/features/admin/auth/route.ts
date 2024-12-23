@@ -13,7 +13,7 @@ router.post("/login", adminLogin);
 
 router.use(authAndPermissionCheck(ROLE.ADMIN));
 router.get("/profile", adminProfile);
-router.put("/profile", upload.single("image"), updateAdminProfile);
+router.put("/profile/update", upload.single("image"), updateAdminProfile);
 router.post("/change-password", adminChangePassword);
 
 export default router;

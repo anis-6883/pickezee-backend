@@ -1,11 +1,13 @@
 import { Sequelize } from "sequelize";
 import { initializeFAQ } from "../models/faq";
+import { initializeSetting } from "../models/setting";
 import { initializeUser } from "../models/user";
 
 export default async function initializeSchemas(sequelize: Sequelize) {
   // Initialize models
   const User = initializeUser(sequelize);
   const FAQ = initializeFAQ(sequelize);
+  const Setting = initializeSetting(sequelize);
 
   // Sync all the changes to the database
   // Use { force: true } for major changes (drops and recreates tables)

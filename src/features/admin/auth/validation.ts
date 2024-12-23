@@ -7,7 +7,7 @@ import {
   stringField,
 } from "../../../helpers";
 
-export const superAdminRegisterSchema = Joi.object({
+export const adminRegisterSchema = Joi.object({
   name: requiredStringField("name"),
   email: requiredEmailField,
   password: requiredWeakPasswordField(6),
