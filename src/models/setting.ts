@@ -4,17 +4,19 @@ export interface ISetting {
   id: string;
   name: string;
   value: string;
+  group: string;
 }
 
 interface SettingCreationAttributes extends Optional<ISetting, "id"> {}
 
 class Setting extends Model<ISetting, SettingCreationAttributes> implements ISetting {
-  public id!: string;
-  public name!: string;
-  public value!: string;
+  public id: string;
+  public name: string;
+  public value: string;
+  public group: string;
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  public readonly createdAt: Date;
+  public readonly updatedAt: Date;
 }
 
 export const initializeSetting = (sequelize: Sequelize) => {
@@ -33,11 +35,21 @@ export const initializeSetting = (sequelize: Sequelize) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
+      group: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     },
     {
       modelName: "Setting",
       tableName: "settings",
       sequelize,
+      indexes: [
+        {
+          unique: true,
+          fields: ["name"],
+        },
+      ],
     }
   );
   return Setting;

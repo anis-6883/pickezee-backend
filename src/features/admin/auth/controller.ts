@@ -125,9 +125,9 @@ export const adminChangePassword = asyncHandler(async (req: IApiRequest, res: Re
   if (isSame) throw "New password cannot be same as old password!";
 
   const hashedPassword = await bcrypt.hash(result.newPassword, 10);
-
   admin.password = hashedPassword;
-  await admin.save({ fields: ["token"] });
 
-  return apiResponse(res, 200, true, "Admin password changed successfully!");
+  await admin.save({ fields: ["password"] });
+
+  return apiResponse(res, 200, true, "Admin password has been changed successfully!");
 });

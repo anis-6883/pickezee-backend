@@ -40,3 +40,9 @@ export interface IApiRequest extends Request {
 }
 
 export type IJWTQuery = { email: string; token?: string };
+
+export interface GroupedSettings {
+  [group: string]: {
+    [name: string]: string;
+  };
+}

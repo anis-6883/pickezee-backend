@@ -9,12 +9,12 @@ export interface IFAQ {
 interface FAQCreationAttributes extends Optional<IFAQ, "id"> {}
 
 class FAQ extends Model<IFAQ, FAQCreationAttributes> implements IFAQ {
-  public id!: string;
-  public question!: string;
-  public answer!: string;
+  public id: string;
+  public question: string;
+  public answer: string;
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  public readonly createdAt: Date;
+  public readonly updatedAt: Date;
 }
 
 export const initializeFAQ = (sequelize: Sequelize) => {
