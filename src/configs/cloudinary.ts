@@ -1,60 +1,103 @@
-// const cloudinary = require("cloudinary").v2;
-// const GeneralSettings = require("../models/settings/GeneralSetting");
+import { v2 as cloudinary } from "cloudinary";
+import Setting, { ISetting } from "../models/setting";
+import { ICloudinaryResult } from "./interfaces";
 
-// const extractPublicId = (url) => {
-//   const parts = url.split("/");
-//   const filenameExt = parts.pop(); // get the filename with extension
-//   const filename = filenameExt.split(".").slice(0, -1).join("."); // Remove the file extension
-//   const path = parts.slice(-2).join("/"); // Get the path excluding the domain
+async function getCloudinaryInstance() {
+  try {
+    const cloudinaryMetadata: ISetting[] = await Setting.findAll({
+      where: { group: "cloudinary" },
+      attributes: ["name", "value"],
+    });
 
-//   return `${path}/${filename}`;
-// };
+    const settingsMap = cloudinaryMetadata.reduce(
+      (acc, setting) => {
+        acc[setting.name] = setting.value;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
 
-// /**
-//  * Uploads an image to Cloudinary and returns the secure URL.
-//  * @param {object} image - The image object (e.g. req.file ).
-//  * @param {string} data - for upload: folder path; for update/delete: image url
-//  * @param {string} operation - The operation to perform (upload, update, delete).
-//  * @returns {Promise<string>} The secure URL of the uploaded image.
-//  */
+    const { cloudinaryCloudName, cloudinaryApiKey, cloudinaryAppSecret, cloudinaryRootFolderName } = settingsMap;
 
-// async function uploadImage(image, data = "", operation = "upload") {
-//   try {
-//     const generalSettings = await GeneralSettings.findOne();
+    if (!(cloudinaryCloudName && cloudinaryApiKey && cloudinaryAppSecret && cloudinaryRootFolderName)) {
+      throw new Error("Cloudinary settings are missing or incomplete!");
+    }
 
-//     if (
-//       generalSettings?.cloudinaryRootFolderName === "" ||
-//       generalSettings?.cloudinaryApiKey === "" ||
-//       generalSettings?.cloudinaryAppSecret === "" ||
-//       generalSettings?.cloudinaryCloudName === ""
-//     )
-//       throw new Error("Update the Cloudinary config first!");
+    // Configure Cloudinary
+    cloudinary.config({
+      cloud_name: cloudinaryCloudName,
+      api_key: cloudinaryApiKey,
+      api_secret: cloudinaryAppSecret,
+    });
 
-//     cloudinary.config({
-//       cloud_name: generalSettings?.cloudinaryCloudName,
-//       api_key: generalSettings?.cloudinaryApiKey,
-//       api_secret: generalSettings?.cloudinaryAppSecret
-//     });
+    return [cloudinary, cloudinaryRootFolderName] as const;
+  } catch (err: any) {
+    console.log("Error: ", err);
+  }
+}
 
-//     const options =
-//       operation === "upload" ? { folder: `${generalSettings?.cloudinaryRootFolderName}/${data}` } : { public_id: extractPublicId(data) };
+// Upload image to Cloudinary
+export async function uploadImageIntoCloudinary(buffer: Buffer, folderName: string): Promise<ICloudinaryResult> {
+  try {
+    const [cloudinary, cloudinaryRootFolderName] = await getCloudinaryInstance();
+    const location = `${cloudinaryRootFolderName}/${folderName}`;
 
-//     if (operation === "delete") {
-//       const deleted = await cloudinary.uploader.destroy(options.public_id);
-//       return deleted;
-//     } else {
-//       if (!image) throw new Error("Please provide a file!"); // ensure image is provided
+    const result: ICloudinaryResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream({ resource_type: "image", folder: location }, (error, result) => {
+          if (error) {
+            console.log("Error: ", error);
+            reject({
+              status: false,
+              message: "Image upload failed!",
+              public_id: null,
+            });
+          } else {
+            resolve({
+              status: true,
+              message: "Image uploaded successfully!",
+              public_id: result.public_id,
+            });
+          }
+        })
+        .end(buffer);
+    });
 
-//       // const b64 = Buffer.from(image.buffer).toString("base64");
-//       // let dataURI = "data:" + image.mimetype + ";base64," + b64;
+    return result;
+  } catch (error) {
+    console.log("Error: ", error);
+    return {
+      status: false,
+      message: "Image upload failed!",
+      public_id: null,
+    };
+  }
+}
 
-//       const uploaded = await cloudinary.uploader.upload(image, options);
-//       return uploaded?.secure_url || Promise.reject(new Error("Upload failed"));
-//     }
-//   } catch (error) {
-//     const cloudinaryError = "Cloudinary: " + error.message;
-//     throw new Error(cloudinaryError);
-//   }
-// }
+// Delete image from Cloudinary
+export async function deleteImageFromCloudinary(publicId: string) {
+  try {
+    const [cloudinary] = await getCloudinaryInstance();
 
-// module.exports = uploadImage;
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.destroy(publicId, (error, result) => {
+        if (error) {
+          console.log("Error: ", error);
+          reject({
+            status: false,
+            message: "Image deletion failed!",
+          });
+        } else {
+          resolve({
+            status: true,
+            message: "Image deleted successfully!",
+          });
+        }
+      });
+    });
+
+    return result;
+  } catch (error) {
+    console.log("Error: ", error);
+  }
+}

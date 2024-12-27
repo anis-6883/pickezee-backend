@@ -1,8 +1,10 @@
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
+import { Op } from "sequelize";
+import { deleteImageFromCloudinary, uploadImageIntoCloudinary } from "../../../configs/cloudinary";
 import { ROLE } from "../../../configs/constants";
-import { IApiRequest } from "../../../configs/interfaces";
-import { apiResponse, asyncHandler, exclude, generateSignature } from "../../../helpers/index";
+import { IApiRequest, ICloudinaryResult } from "../../../configs/interfaces";
+import { apiResponse, asyncHandler, exclude, fileValidation, generateSignature } from "../../../helpers/index";
 import User from "../../../models/user";
 import { adminChangePasswordSchema, adminRegisterSchema, loginSchema, updateAdminSchema } from "./validation";
 
@@ -81,29 +83,23 @@ export const updateAdminProfile = asyncHandler(async (req: IApiRequest, res: Res
   const result = await updateAdminSchema.validateAsync(req.body, { abortEarly: false });
   const { softDeleted, ...updatedBody } = result;
 
-  // const existingSuperAdmin = await User.findOne({ email: updatedBody.email, _id: { $ne: req.user.id } });
-  // if (existingSuperAdmin) return apiResponse(res, 409, false, "This email already exists!");
+  const existingSuperAdmin = await User.findOne({ where: { email: updatedBody.email, id: { [Op.ne]: req.user.id } } });
+  if (existingSuperAdmin) return apiResponse(res, 409, false, "This email already exists!");
 
   // File Validation
-  // if (req.file) {
-  //   const { status, message } = fileValidation(req.file, undefined, ["image/jpeg", "image/png", "image/jpg"]);
-  //   if (!status) return apiResponse(res, 400, false, "Invalid Request!", { image: message });
+  if (req.file) {
+    const { status, message } = fileValidation(req.file, undefined, ["image/jpeg", "image/png", "image/jpg"]);
+    if (!status) throw message;
 
-  //   const extension = path.extname(req.file.originalname) || ".png";
-  //   const { status: uploadStatus, key } = await uploadFileToS3Bucket(
-  //     req.file.buffer,
-  //     req.file.mimetype,
-  //     "user",
-  //     extension
-  //   );
-  //   if (uploadStatus) updatedBody.image = key;
+    const uploadResult: ICloudinaryResult = await uploadImageIntoCloudinary(req.file.buffer, "user");
+    if (uploadResult.status) updatedBody.image = uploadResult?.public_id;
 
-  //   const prevImage = await User.findById(req.user._id, { image: 1 });
-  //   if (prevImage) deleteFileFromS3Bucket(prevImage?.image);
-  // }
+    const prevImage = await User.findByPk(req.user.id, { attributes: ["image"] });
+    if (uploadResult.status && prevImage?.image) deleteImageFromCloudinary(prevImage?.image);
+  }
 
-  // const superAdmin = await User.findOneAndUpdate({ _id: req.user._id }, updatedBody, { new: true });
-  // if (!superAdmin) return apiResponse(res, 404, false, "Super admin not found!");
+  const admin = await User.update(updatedBody, { where: { id: req.user.id } });
+  if (!admin[0]) return apiResponse(res, 404, false, "Admin not found!");
 
   return apiResponse(res, 200, true, "Admin profile updated successfully!");
 });

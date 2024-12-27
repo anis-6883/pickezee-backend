@@ -56,6 +56,14 @@ export const settingSchema = Joi.object({
   }).messages({
     "object.base": "s3Bucket must be an object!",
   }),
+  cloudinary: Joi.object({
+    cloudinaryCloudName: stringField("cloudinaryCloudName"),
+    cloudinaryApiKey: stringField("cloudinaryApiKey"),
+    cloudinaryAppSecret: stringField("cloudinaryAppSecret"),
+    cloudinaryRootFolderName: stringField("cloudinaryRootFolderName"),
+  }).messages({
+    "object.base": "cloudinary must be an object!",
+  }),
   stripe: Joi.object({
     stripeSecretKey: stringField("stripeSecretKey"),
     stripeWebhookSecretKey: stringField("stripeWebhookSecretKey"),

@@ -46,3 +46,9 @@ export interface GroupedSettings {
     [name: string]: string;
   };
 }
+
+export interface ICloudinaryResult {
+  status: boolean;
+  message: string;
+  public_id?: string | null;
+}
