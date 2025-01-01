@@ -13,7 +13,7 @@ export const adminRegisterSchema = Joi.object({
   password: requiredWeakPasswordField(6),
 });
 
-export const loginSchema = Joi.object({
+export const adminLoginSchema = Joi.object({
   email: requiredEmailField,
   password: requiredStringField("password"),
 });

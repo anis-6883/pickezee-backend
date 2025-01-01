@@ -6,7 +6,6 @@ import { ROLE } from "../../../configs/constants";
 import { IApiRequest, ICloudinaryResult } from "../../../configs/interfaces";
 import { apiResponse, asyncHandler, exclude, fileValidation, generateSignature } from "../../../helpers/index";
 import User from "../../../models/user";
-import { adminChangePasswordSchema, adminRegisterSchema, loginSchema, updateAdminSchema } from "./validation";
 
 const ALARM_EXPIRE_TIME = 60 * 60 * 24 * 29 * 1000; // 29 Days
 
@@ -16,8 +15,8 @@ const ALARM_EXPIRE_TIME = 60 * 60 * 24 * 29 * 1000; // 29 Days
  * @param {Response} res - The HTTP response object.
  * @returns {Promise<void>} - A promise that resolves when the response is sent.
  */
-export const adminRegister = asyncHandler(async (req: Request, res: Response) => {
-  const result = await adminRegisterSchema.validateAsync(req.body);
+export const adminRegister = asyncHandler(async (req: IApiRequest, res: Response) => {
+  const result = req.result;
 
   const existingAdmin = await User.findOne({ where: { email: result.email } });
   if (existingAdmin) return apiResponse(res, 409, false, "This Admin already exists!");
@@ -38,8 +37,8 @@ export const adminRegister = asyncHandler(async (req: Request, res: Response) =>
  * @param {Response} res - The HTTP response object.
  * @returns {Promise<void>} - A promise that resolves when the response is sent.
  */
-export const adminLogin = asyncHandler(async (req: Request, res: Response) => {
-  const result = await loginSchema.validateAsync(req.body);
+export const adminLogin = asyncHandler(async (req: IApiRequest, res: Response) => {
+  const result = req.result;
 
   const admin = await User.findOne({ where: { email: result.email } });
   if (!admin) return apiResponse(res, 401, false, "Invalid credentials!");
@@ -80,8 +79,7 @@ export const adminProfile = asyncHandler(async (req: IApiRequest, res: Response)
  * @returns {Promise<void>} - A promise that resolves when the response is sent.
  */
 export const updateAdminProfile = asyncHandler(async (req: IApiRequest, res: Response) => {
-  const result = await updateAdminSchema.validateAsync(req.body, { abortEarly: false });
-  const { softDeleted, ...updatedBody } = result;
+  const { softDeleted, ...updatedBody } = req.result;
 
   const existingSuperAdmin = await User.findOne({ where: { email: updatedBody.email, id: { [Op.ne]: req.user.id } } });
   if (existingSuperAdmin) return apiResponse(res, 409, false, "This email already exists!");
@@ -111,16 +109,16 @@ export const updateAdminProfile = asyncHandler(async (req: IApiRequest, res: Res
  * @returns {Promise<void>} - A promise that resolves when the response is sent.
  */
 export const adminChangePassword = asyncHandler(async (req: IApiRequest, res: Response) => {
-  const result = await adminChangePasswordSchema.validateAsync(req.body);
+  const { oldPassword, newPassword } = req.result;
   const admin = await User.findByPk(req.user.id);
 
-  const isPasswordValid = await bcrypt.compare(result.oldPassword, admin.password);
+  const isPasswordValid = await bcrypt.compare(oldPassword, admin.password);
   if (!isPasswordValid) throw "Old password is incorrect!";
 
-  const isSame = await bcrypt.compare(result.newPassword, admin.password);
+  const isSame = await bcrypt.compare(newPassword, admin.password);
   if (isSame) throw "New password cannot be same as old password!";
 
-  const hashedPassword = await bcrypt.hash(result.newPassword, 10);
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
   admin.password = hashedPassword;
 
   await admin.save({ fields: ["password"] });
