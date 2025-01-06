@@ -74,7 +74,7 @@ export async function uploadStreamImageIntoCloudinary(buffer: Buffer, folderName
   }
 }
 
-// Upload image into Cloudinary
+// Upload image into Cloudinary (Currently Use)
 export async function uploadImageIntoCloudinary(
   file: Express.Multer.File,
   folderName: string

@@ -88,11 +88,11 @@ export const updateAdminProfile = asyncHandler(async (req: IApiRequest, res: Res
 
   // File Validation
   if (req.hasFile) {
-    const result: ICloudinaryResult[] = await Promise.all(req?.fileObject);
-    if (result[0]?.status) updatedBody.image = result[0]?.public_id;
+    const result: ICloudinaryResult = await req?.fileObject;
+    if (result.status) updatedBody.image = result?.public_id;
 
     const prevImage = await User.findByPk(req.user.id, { attributes: ["image"] });
-    if (result[0]?.status && prevImage?.image) deleteImageFromCloudinary(prevImage?.image);
+    if (result?.status && prevImage?.image) deleteImageFromCloudinary(prevImage?.image);
   }
 
   const admin = await User.update(updatedBody, { where: { id: req.user.id } });

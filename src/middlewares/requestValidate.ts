@@ -20,7 +20,7 @@ export const requestValidate =
         if (!status) return apiResponse(res, 400, false, "Invalid Request!", { image: message });
 
         req.hasFile = true;
-        req.fileObject = [uploadImageIntoCloudinary(req.file, folderName)];
+        req.fileObject = uploadImageIntoCloudinary(req.file, folderName);
       }
 
       return next();
