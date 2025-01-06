@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { Op } from "sequelize";
-import { deleteImageFromCloudinary, uploadImageIntoCloudinary } from "../../../configs/cloudinary";
+import { deleteImageFromCloudinary } from "../../../configs/cloudinary";
 import { ROLE } from "../../../configs/constants";
 import { IApiRequest, ICloudinaryResult } from "../../../configs/interfaces";
-import { apiResponse, asyncHandler, exclude, fileValidation, generateSignature } from "../../../helpers/index";
+import { apiResponse, asyncHandler, exclude, generateSignature } from "../../../helpers/index";
 import User from "../../../models/user";
 
 const ALARM_EXPIRE_TIME = 60 * 60 * 24 * 29 * 1000; // 29 Days
@@ -81,19 +81,18 @@ export const adminProfile = asyncHandler(async (req: IApiRequest, res: Response)
 export const updateAdminProfile = asyncHandler(async (req: IApiRequest, res: Response) => {
   const { softDeleted, ...updatedBody } = req.result;
 
-  const existingSuperAdmin = await User.findOne({ where: { email: updatedBody.email, id: { [Op.ne]: req.user.id } } });
+  const existingSuperAdmin = await User.findOne({
+    where: { email: updatedBody?.email ?? "", id: { [Op.ne]: req.user.id } },
+  });
   if (existingSuperAdmin) return apiResponse(res, 409, false, "This email already exists!");
 
   // File Validation
-  if (req.file) {
-    const { status, message } = fileValidation(req.file, undefined, ["image/jpeg", "image/png", "image/jpg"]);
-    if (!status) throw message;
-
-    const uploadResult: ICloudinaryResult = await uploadImageIntoCloudinary(req.file.buffer, "user");
-    if (uploadResult.status) updatedBody.image = uploadResult?.public_id;
+  if (req.hasFile) {
+    const result: ICloudinaryResult[] = await Promise.all(req?.fileObject);
+    if (result[0]?.status) updatedBody.image = result[0]?.public_id;
 
     const prevImage = await User.findByPk(req.user.id, { attributes: ["image"] });
-    if (uploadResult.status && prevImage?.image) deleteImageFromCloudinary(prevImage?.image);
+    if (result[0]?.status && prevImage?.image) deleteImageFromCloudinary(prevImage?.image);
   }
 
   const admin = await User.update(updatedBody, { where: { id: req.user.id } });

@@ -36,8 +36,8 @@ async function getCloudinaryInstance() {
   }
 }
 
-// Upload image to Cloudinary
-export async function uploadImageIntoCloudinary(buffer: Buffer, folderName: string): Promise<ICloudinaryResult> {
+// Upload stream image into Cloudinary
+export async function uploadStreamImageIntoCloudinary(buffer: Buffer, folderName: string): Promise<ICloudinaryResult> {
   try {
     const [cloudinary, cloudinaryRootFolderName] = await getCloudinaryInstance();
     const location = `${cloudinaryRootFolderName}/${folderName}`;
@@ -64,6 +64,38 @@ export async function uploadImageIntoCloudinary(buffer: Buffer, folderName: stri
     });
 
     return result;
+  } catch (error) {
+    console.log("Error: ", error);
+    return {
+      status: false,
+      message: "Image upload failed!",
+      public_id: null,
+    };
+  }
+}
+
+// Upload image into Cloudinary
+export async function uploadImageIntoCloudinary(
+  file: Express.Multer.File,
+  folderName: string
+): Promise<ICloudinaryResult> {
+  try {
+    const [cloudinary, cloudinaryRootFolderName] = await getCloudinaryInstance();
+    const location = `${cloudinaryRootFolderName}/${folderName}`;
+
+    const b64 = Buffer.from(file.buffer).toString("base64");
+    let dataURI = "data:" + file.mimetype + ";base64," + b64;
+
+    const res = await cloudinary.uploader.upload(dataURI, {
+      resource_type: "image",
+      folder: location,
+    });
+
+    return {
+      status: true,
+      message: "Image uploaded successfully!",
+      public_id: res.public_id,
+    };
   } catch (error) {
     console.log("Error: ", error);
     return {

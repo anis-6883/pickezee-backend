@@ -15,7 +15,7 @@ router.post("/login", requestValidate(adminLoginSchema), adminLogin);
 
 router.use(authAndPermissionCheck(ROLE.ADMIN));
 router.get("/profile", adminProfile);
-router.put("/profile/update", upload.single("image"), requestValidate(updateAdminSchema), updateAdminProfile);
+router.put("/profile/update", upload.single("image"), requestValidate(updateAdminSchema, "user"), updateAdminProfile);
 router.post("/change-password", requestValidate(adminChangePasswordSchema), adminChangePassword);
 
 export default router;

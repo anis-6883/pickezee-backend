@@ -38,6 +38,8 @@ export interface IApiRequest extends Request {
   token?: string;
   result?: any;
   role: string;
+  hasFile?: boolean;
+  fileObject?: any;
 }
 
 export type IJWTQuery = { email: string; token?: string };
