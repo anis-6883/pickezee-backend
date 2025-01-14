@@ -33,19 +33,19 @@ export const initializeUser = (sequelize: Sequelize) => {
         primaryKey: true,
       },
       image: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(63),
         defaultValue: "",
       },
       name: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(127),
         allowNull: false,
       },
       email: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(127),
         allowNull: false,
       },
       password: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(255),
         allowNull: false,
       },
       emailVerified: {
@@ -53,11 +53,11 @@ export const initializeUser = (sequelize: Sequelize) => {
         defaultValue: false,
       },
       dialCode: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(7),
         defaultValue: "",
       },
       phone: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(15),
         defaultValue: "",
       },
       phoneVerified: {
@@ -81,7 +81,7 @@ export const initializeUser = (sequelize: Sequelize) => {
         defaultValue: "",
       },
       dob: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(31),
         defaultValue: "",
       },
       token: {

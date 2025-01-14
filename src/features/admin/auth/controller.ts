@@ -18,8 +18,8 @@ const ALARM_EXPIRE_TIME = 60 * 60 * 24 * 29 * 1000; // 29 Days
 export const adminRegister = asyncHandler(async (req: IApiRequest, res: Response) => {
   const result = req.result;
 
-  const existingAdmin = await User.findOne({ where: { email: result.email } });
-  if (existingAdmin) return apiResponse(res, 409, false, "This Admin already exists!");
+  const existingEmail = await User.findOne({ where: { email: result.email } });
+  if (existingEmail) return apiResponse(res, 409, false, "This email already exists!");
 
   result.password = await bcrypt.hash(result.password, 10);
   result.role = ROLE.ADMIN;

@@ -28,7 +28,7 @@ export const initializeSetting = (sequelize: Sequelize) => {
         primaryKey: true,
       },
       name: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(127),
         allowNull: false,
       },
       value: {
@@ -36,7 +36,7 @@ export const initializeSetting = (sequelize: Sequelize) => {
         allowNull: false,
       },
       group: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(31),
         allowNull: false,
       },
     },

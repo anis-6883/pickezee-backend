@@ -26,7 +26,7 @@ export const initializeFAQ = (sequelize: Sequelize) => {
         primaryKey: true,
       },
       question: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(255),
         allowNull: false,
       },
       answer: {
