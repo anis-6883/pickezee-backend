@@ -29,7 +29,15 @@ export interface IUser {
   role: "user" | "admin";
   gender: "male" | "female" | "others" | "";
   dob: string;
+}
+
+export interface ISession {
+  id: string;
   token: string;
+  userAgent: string;
+  ipAddress: string;
+  expireAt: Date;
+  userId: string;
 }
 
 export interface IApiRequest extends Request {

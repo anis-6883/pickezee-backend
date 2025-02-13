@@ -51,8 +51,8 @@ export const adminLogin = asyncHandler(async (req: IApiRequest, res: Response) =
 
   const data = exclude(admin.dataValues, ["password"]);
 
-  admin.token = token;
-  await admin.save({ fields: ["token"] });
+  // admin.token = token;
+  // await admin.save({ fields: ["token"] });
 
   return apiResponse(res, 200, true, "Admin login successfully!", {
     ...data,
