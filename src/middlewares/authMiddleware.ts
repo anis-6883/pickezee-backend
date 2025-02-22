@@ -1,17 +1,16 @@
 import { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
-import { COOKIE_KEY } from "../configs/constants";
-import { IApiRequest, IJWTQuery } from "../configs/interfaces";
-import { apiResponse } from "../helpers";
+import { Op } from "sequelize";
+import { IApiRequest } from "../configs/interfaces";
+import { apiResponse, hashToken } from "../helpers";
+import Session from "../models/session";
 import User from "../models/user";
 
 export const authAndPermissionCheck =
-  (role: string | string[], checkPermission: boolean = true, tokenCheck: boolean = false) =>
+  (role: string | string[], checkPermission: boolean = true) =>
   async (req: IApiRequest, res: Response, next: NextFunction): Promise<any> => {
     try {
-      const token =
-        req?.cookies?.temp || req.headers?.authorization?.replace("Bearer ", "") || req?.cookies?.[COOKIE_KEY];
-
+      const token = req.headers?.authorization?.replace("Bearer ", "");
       if (!token) return apiResponse(res, 401, false, "Unauthorized Request!");
 
       const decoded: any = jwt.verify(token, process.env.APP_SECRET!);
@@ -21,13 +20,28 @@ export const authAndPermissionCheck =
         return apiResponse(res, 403, false, "You are not authorized to perform this action!");
       }
 
-      const query: IJWTQuery = { email: decoded?.email };
-      if (tokenCheck) query.token = token;
+      const session = await Session.findOne({
+        where: {
+          userId: decoded.id,
+          token: hashToken(token),
+          expireAt: {
+            [Op.gt]: new Date(), // Ensures ExpireAt > Current Time
+          },
+        },
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: {
+              exclude: ["password"],
+            },
+          },
+        ],
+      });
 
-      let user = await User.findOne({ where: query, attributes: { exclude: ["password"] } });
-      if (!user) return apiResponse(res, 401, false, "Unauthorized Request!");
+      if (!session) return res.status(401).json({ message: "Session expired!" });
 
-      req.user = user;
+      req.user = session.user;
       req.token = token;
       req.role = decoded.role;
       req.otp = decoded?.otp || undefined;

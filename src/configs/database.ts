@@ -3,7 +3,10 @@ import { Sequelize } from "sequelize";
 export const sequelize = new Sequelize(process.env.POSTGRES_URI, {
   dialect: "postgres",
   logging: false,
-  timezone: "+00:00",
+  timezone: "UTC",
+  dialectOptions: {
+    useUTC: true,
+  },
 });
 
 export const connectToPostgres = async () => {

@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { Request, Response } from "express";
 import Joi from "joi";
 import jwt from "jsonwebtoken";
@@ -138,18 +139,16 @@ export const formatErrorMsg = (result: any): string => {
   return errorMsg;
 };
 
-export const generateSalt = async () => {
-  return await bcrypt.genSalt();
-};
+export const generateSalt = async () => await bcrypt.genSalt();
+
+export const hashToken = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
 
 export const generatePassword = async (password: string, salt: string) => {
   return await bcrypt.hash(password, salt);
 };
 
 export const generateSignature = (payload: any, expiresIn: number | string) => {
-  if (!payload.ott) {
-    payload.ott = false;
-  }
+  if (!payload.ott) payload.ott = false;
   return jwt.sign(payload, APP_SECRET, { expiresIn });
 };
 

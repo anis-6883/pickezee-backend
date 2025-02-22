@@ -4,10 +4,9 @@ import { Op } from "sequelize";
 import { deleteImageFromCloudinary } from "../../../configs/cloudinary";
 import { ROLE } from "../../../configs/constants";
 import { IApiRequest, ICloudinaryResult } from "../../../configs/interfaces";
-import { apiResponse, asyncHandler, exclude, generateSignature } from "../../../helpers/index";
+import { apiResponse, asyncHandler, exclude, generateSignature, hashToken } from "../../../helpers/index";
+import Session from "../../../models/session";
 import User from "../../../models/user";
-
-const ALARM_EXPIRE_TIME = 60 * 60 * 24 * 29 * 1000; // 29 Days
 
 /**
  * Admin Registration
@@ -25,10 +24,11 @@ export const adminRegister = asyncHandler(async (req: IApiRequest, res: Response
   result.role = ROLE.ADMIN;
   result.provider = "email";
   result.emailVerified = true;
+  result.createdAt = new Date().toISOString();
 
   await User.create(result);
 
-  return apiResponse(res, 201, true, "Admin have registered successfully!");
+  return apiResponse(res, 201, true, "Admin has registered successfully!");
 });
 
 /**
@@ -39,26 +39,42 @@ export const adminRegister = asyncHandler(async (req: IApiRequest, res: Response
  */
 export const adminLogin = asyncHandler(async (req: IApiRequest, res: Response) => {
   const result = req.result;
+  const userAgent = req.headers["user-agent"];
+  const ipAddress = req.ip;
 
   const admin = await User.findOne({ where: { email: result.email } });
   if (!admin) return apiResponse(res, 401, false, "Invalid credentials!");
 
   const isPasswordValid = await bcrypt.compare(result.password, admin.password);
-  if (!isPasswordValid) return apiResponse(res, 401, false, "Invalid credentials!");
+  if (!isPasswordValid) return apiResponse(res, 401, false, "Invalid password!");
 
-  const token = generateSignature({ email: admin.email, role: admin.role, ref: false }, "30d");
-  const refreshToken = generateSignature({ email: admin.email, role: admin.role, ref: true }, "60d");
+  const token = generateSignature({ id: admin.id, role: admin.role }, "30d");
+  const hashedToken = hashToken(token);
+
+  const activeSessions = await Session.findAll({ where: { userId: admin.id }, order: [["createdAt", "ASC"]] });
+
+  // Active Session Limit is 3
+  if (activeSessions.length >= 3) {
+    await Session.destroy({
+      where: {
+        id: activeSessions[0].id,
+      },
+    });
+  }
+
+  await Session.create({
+    userId: admin.id,
+    token: hashedToken,
+    userAgent: userAgent,
+    ipAddress: ipAddress,
+    lastSeen: new Date(),
+    expireAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days expiry
+  });
 
   const data = exclude(admin.dataValues, ["password"]);
+  data.token = token;
 
-  // admin.token = token;
-  // await admin.save({ fields: ["token"] });
-
-  return apiResponse(res, 200, true, "Admin login successfully!", {
-    ...data,
-    refreshToken,
-    expiresIn: new Date().setTime(new Date().getTime() + ALARM_EXPIRE_TIME),
-  });
+  return apiResponse(res, 200, true, "Admin login successfully!", data);
 });
 
 /**

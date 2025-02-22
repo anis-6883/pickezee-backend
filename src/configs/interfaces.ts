@@ -19,7 +19,7 @@ export interface IUser {
   image: string;
   name: string;
   email: string;
-  password: string;
+  password?: string;
   emailVerified: boolean;
   dialCode: string;
   phone: string;
@@ -28,7 +28,7 @@ export interface IUser {
   status: boolean;
   role: "user" | "admin";
   gender: "male" | "female" | "others" | "";
-  dob: string;
+  dob: Date;
 }
 
 export interface ISession {
@@ -37,6 +37,7 @@ export interface ISession {
   userAgent: string;
   ipAddress: string;
   expireAt: Date;
+  lastSeen: Date;
   userId: string;
 }
 
@@ -50,7 +51,10 @@ export interface IApiRequest extends Request {
   fileObject?: any;
 }
 
-export type IJWTQuery = { email: string; token?: string };
+export interface IJWTQuery {
+  id: string;
+  token: string;
+}
 
 export interface GroupedSettings {
   [group: string]: {
