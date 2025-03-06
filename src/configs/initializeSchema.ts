@@ -18,7 +18,7 @@ export default async function initializeSchemas(sequelize: Sequelize) {
   // Sync all the changes to the database
   // Use { force: true } for major changes (drops and recreates tables)
   // Use { alter: true } for minor changes
-  await sequelize.sync({ alter: true });
+  await sequelize.sync({ force: true });
 
   console.log("Schemas have been initialized into SQL!");
 }
