@@ -63,8 +63,8 @@ importers:
         specifier: ^6.4.15
         version: 6.4.17
       bcrypt:
-        specifier: ^5.1.1
-        version: 5.1.1
+        specifier: 5.0.1
+        version: 5.0.1
       cloudinary:
         specifier: ^2.5.1
         version: 2.5.1
@@ -1024,8 +1024,8 @@ packages:
     resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
     engines: {node: '>=10.0.0'}
 
-  bcrypt@5.1.1:
-    resolution: {integrity: sha512-AGBHOG5hPYZ5Xl9KXzU5iKq9516yEmvCKDg3ecP5kX2aB6UqTeXZxk2ELnDgDm6BQSMlLt9rDB4LoSMx0rYwww==}
+  bcrypt@5.0.1:
+    resolution: {integrity: sha512-9BTgmrhZM2t1bNuDtrtIMVSmmxZBrJ71n8Wg+YgdjHuIWYF7SjjmCPZFB+/5i/o/PIeRpwVJR3P+NrpIItUjqw==}
     engines: {node: '>= 10.0.0'}
 
   bignumber.js@9.1.2:
@@ -1962,8 +1962,8 @@ packages:
     resolution: {integrity: sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==}
     engines: {node: '>= 0.4.0'}
 
-  node-addon-api@5.1.0:
-    resolution: {integrity: sha512-eh0GgfEkpnoWDq+VY8OyvYhFEzBk6jIYbRKdIlyTiAXIVJ8PyBaKb0rp7oDtoddbdoHWhq8wwr+XZ81F1rpNdA==}
+  node-addon-api@3.2.1:
+    resolution: {integrity: sha512-mmcei9JghVNDYydghQmeDX8KoAm0FAiYyIcUt/N4nhyAipB17pllZQDOJD2fotxABnt4Mdz+dKTO7eftLg4d0A==}
 
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
@@ -4194,10 +4194,10 @@ snapshots:
 
   basic-ftp@5.0.5: {}
 
-  bcrypt@5.1.1:
+  bcrypt@5.0.1:
     dependencies:
       '@mapbox/node-pre-gyp': 1.0.11
-      node-addon-api: 5.1.0
+      node-addon-api: 3.2.1
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -5231,7 +5231,7 @@ snapshots:
 
   netmask@2.0.2: {}
 
-  node-addon-api@5.1.0: {}
+  node-addon-api@3.2.1: {}
 
   node-fetch@2.7.0:
     dependencies:
