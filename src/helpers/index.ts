@@ -147,7 +147,7 @@ export const generatePassword = async (password: string, salt: string) => {
   return await bcrypt.hash(password, salt);
 };
 
-export const generateSignature = (payload: any, expiresIn: number | string) => {
+export const generateSignature = (payload: { [key: string]: any }, expiresIn: number) => {
   if (!payload.ott) payload.ott = false;
   return jwt.sign(payload, APP_SECRET, { expiresIn });
 };
