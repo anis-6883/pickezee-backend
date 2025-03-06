@@ -48,7 +48,7 @@ export const adminLogin = asyncHandler(async (req: IApiRequest, res: Response) =
   const isPasswordValid = await bcrypt.compare(result.password, admin.password);
   if (!isPasswordValid) return apiResponse(res, 401, false, "Invalid password!");
 
-  const token = generateSignature({ id: admin.id, role: admin.role }, "30d");
+  const token = generateSignature({ id: admin.id, role: admin.role }, 30 * 24 * 60 * 60);
   const hashedToken = hashToken(token);
 
   const activeSessions = await Session.findAll({ where: { userId: admin.id }, order: [["createdAt", "ASC"]] });
