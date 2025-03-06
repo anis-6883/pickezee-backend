@@ -1,5 +1,5 @@
 {
-  "name": "try-ecommerce",
+  "name": "pickezee",
   "version": "1.0.0",
   "description": "E-commerce Web App",
   "main": "src/index.ts",
@@ -7,7 +7,6 @@
     "start": "node ./dist/index.js",
     "dev": "ts-node-dev src/index.ts",
     "build": "npm run clean && tsc",
-    "vercel-build": "echo hello",
     "format": "prettier --write .",
     "prepare": "husky",
     "clean": "rimraf dist/"
