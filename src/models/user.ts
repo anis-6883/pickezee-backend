@@ -70,7 +70,7 @@ class User extends Model<IUser, UserCreationAttributes> implements IUser {
         },
         status: {
           type: DataTypes.BOOLEAN,
-          defaultValue: true,
+          defaultValue: false,
         },
         role: {
           type: DataTypes.ENUM("user", "admin"),

@@ -148,12 +148,38 @@ export const generatePassword = async (password: string, salt: string) => {
 };
 
 export const generateSignature = (payload: { [key: string]: any }, expiresIn: number) => {
-  if (!payload.ott) payload.ott = false;
   return jwt.sign(payload, APP_SECRET, { expiresIn });
 };
 
 export const validatePassword = async (enteredPassword: string, savedPassword: string, salt: string) => {
   return (await generatePassword(enteredPassword, salt)) === savedPassword;
+};
+
+export const encryptOTP = (otp: string, secretKey: string): string => {
+  if (secretKey.length !== 64) throw new Error("Secret key must be a 32-byte (64-character hex) string.");
+
+  const key = Buffer.from(secretKey, "hex");
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+
+  let encrypted = cipher.update(otp, "utf8", "hex");
+  encrypted += cipher.final("hex");
+
+  return iv.toString("hex") + encrypted; // Prepend IV for decryption
+};
+
+export const decryptOTP = (encryptedOtp: string, secretKey: string): string => {
+  if (secretKey.length !== 64) throw new Error("Secret key must be a 32-byte (64-character hex) string.");
+
+  const key = Buffer.from(secretKey, "hex");
+  const iv = Buffer.from(encryptedOtp.slice(0, 16 * 2), "hex");
+  const encryptedText = Buffer.from(encryptedOtp.slice(16 * 2), "hex");
+
+  const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
+  let decrypted = decipher.update(encryptedText); // No encoding needed for Buffer input
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+
+  return decrypted.toString("utf8");
 };
 
 export const excludeMany = async (array: any[], keys: any[]): Promise<any[]> => {
@@ -222,20 +248,6 @@ export const makePaginate = (docs: any[], page: number, limit: number, skip: num
 
   return {
     docs,
-    page: +page,
-    limit: +limit,
-    totalPage: Math.ceil(total / Number(limit)),
-    totalDocs: total,
-    hasNext,
-    hasPrev,
-  };
-};
-
-export const makePaginateForMobile = (page: number, limit: number, skip: number, total: number) => {
-  const hasNext = total > skip + Number(limit);
-  const hasPrev = Number(page) > 1;
-
-  return {
     page: +page,
     limit: +limit,
     totalPage: Math.ceil(total / Number(limit)),

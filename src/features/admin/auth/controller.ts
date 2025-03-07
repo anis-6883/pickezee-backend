@@ -18,13 +18,16 @@ export const adminRegister = asyncHandler(async (req: IApiRequest, res: Response
   const result = req.result;
 
   const existingEmail = await User.findOne({ where: { email: result.email } });
-  if (existingEmail) return apiResponse(res, 409, false, "This email already exists!");
+  if (existingEmail && existingEmail.status) return apiResponse(res, 409, false, "This email already exists!");
+
+  // Delete In-active Admin
+  if (existingEmail) await User.destroy({ where: { email: result.email } });
 
   result.password = await bcrypt.hash(result.password, 10);
   result.role = ROLE.ADMIN;
   result.provider = "email";
   result.emailVerified = true;
-  result.createdAt = new Date().toISOString();
+  result.status = true;
 
   await User.create(result);
 
@@ -42,7 +45,7 @@ export const adminLogin = asyncHandler(async (req: IApiRequest, res: Response) =
   const userAgent = req.headers["user-agent"];
   const ipAddress = req.ip;
 
-  const admin = await User.findOne({ where: { email: result.email } });
+  const admin = await User.findOne({ where: { email: result.email, status: true } });
   if (!admin) return apiResponse(res, 401, false, "Invalid credentials!");
 
   const isPasswordValid = await bcrypt.compare(result.password, admin.password);
