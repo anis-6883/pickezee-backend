@@ -1,11 +1,10 @@
 import bcrypt from "bcrypt";
-import { Request, Response } from "express";
+import { Response } from "express";
 import { ROLE } from "../../../configs/constants";
 import { IApiRequest } from "../../../configs/interfaces";
 import {
   apiResponse,
   asyncHandler,
-  encryptOTP,
   exclude,
   generateSignature,
   getRandomInteger,
@@ -13,6 +12,7 @@ import {
 } from "../../../helpers/index";
 import Session from "../../../models/session";
 import User from "../../../models/user";
+import { sendVerificationEmail } from "./service";
 
 /**
  * User Registration
@@ -99,11 +99,12 @@ export const userRegister = asyncHandler(async (req: IApiRequest, res: Response)
     const newUser = await User.create(result);
     const otp = String(getRandomInteger(100000, 999999));
     const token = generateSignature(
-      { id: newUser.id, role: newUser.role, otp: encryptOTP(otp, process.env.APP_SECRET) },
+      { id: newUser.id, role: newUser.role, otp: await bcrypt.hash(otp, 10) },
       2 * 60 * 60
     );
 
-    // TODO: Send OTP Mail
+    // Send OTP Mail
+    sendVerificationEmail(newUser.email, otp);
 
     return apiResponse(res, 201, true, "OTP send successfully!", { token });
   }
