@@ -87,8 +87,10 @@ export const adminLogin = asyncHandler(async (req: IApiRequest, res: Response) =
  * @returns {Promise<void>} - A promise that resolves when the response is sent.
  */
 export const adminProfile = asyncHandler(async (req: IApiRequest, res: Response) => {
-  if (!req.user) return apiResponse(res, 401, false, "Unauthorized Request!");
-  return apiResponse(res, 200, true, "Admin profile fetched successfully!", req.user);
+  const user = await User.findOne({ where: { id: req.id }, attributes: { exclude: ["password"] } });
+  if (!user) return apiResponse(res, 404, true, "User not found!");
+
+  return apiResponse(res, 200, true, "Admin profile fetched successfully!", user);
 });
 
 /**
@@ -101,7 +103,7 @@ export const updateAdminProfile = asyncHandler(async (req: IApiRequest, res: Res
   const { softDeleted, ...updatedBody } = req.result;
 
   const existingSuperAdmin = await User.findOne({
-    where: { email: updatedBody?.email ?? "", id: { [Op.ne]: req.user.id } },
+    where: { email: updatedBody?.email ?? "", id: { [Op.ne]: req.id } },
   });
   if (existingSuperAdmin) return apiResponse(res, 409, false, "This email already exists!");
 
@@ -110,11 +112,11 @@ export const updateAdminProfile = asyncHandler(async (req: IApiRequest, res: Res
     const result: ICloudinaryResult = await req?.fileObject;
     if (result.status) updatedBody.image = result?.public_id;
 
-    const prevImage = await User.findByPk(req.user.id, { attributes: ["image"] });
+    const prevImage = await User.findByPk(req.id, { attributes: ["image"] });
     if (result?.status && prevImage?.image) deleteImageFromCloudinary(prevImage?.image);
   }
 
-  const admin = await User.update(updatedBody, { where: { id: req.user.id } });
+  const admin = await User.update(updatedBody, { where: { id: req.id } });
   if (!admin[0]) return apiResponse(res, 404, false, "Admin not found!");
 
   return apiResponse(res, 200, true, "Admin profile updated successfully!");
@@ -128,7 +130,7 @@ export const updateAdminProfile = asyncHandler(async (req: IApiRequest, res: Res
  */
 export const adminChangePassword = asyncHandler(async (req: IApiRequest, res: Response) => {
   const { oldPassword, newPassword } = req.result;
-  const admin = await User.findByPk(req.user.id);
+  const admin = await User.findByPk(req.id);
 
   const isPasswordValid = await bcrypt.compare(oldPassword, admin.password);
   if (!isPasswordValid) throw "Old password is incorrect!";

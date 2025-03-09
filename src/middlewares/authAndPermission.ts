@@ -4,10 +4,9 @@ import { Op } from "sequelize";
 import { IApiRequest } from "../configs/interfaces";
 import { apiResponse, hashToken } from "../helpers";
 import Session from "../models/session";
-import User from "../models/user";
 
-export const authAndPermissionCheck =
-  (role: string | string[], checkPermission: boolean = true) =>
+export const authAndPermission =
+  (role: string | string[], checkPermission: boolean = true, otpCheck: boolean = false) =>
   async (req: IApiRequest, res: Response, next: NextFunction): Promise<any> => {
     try {
       const token = req.headers?.authorization?.replace("Bearer ", "");
@@ -20,31 +19,25 @@ export const authAndPermissionCheck =
         return apiResponse(res, 403, false, "You are not authorized to perform this action!");
       }
 
-      const session = await Session.findOne({
-        where: {
-          userId: decoded.id,
-          token: hashToken(token),
-          expireAt: {
-            [Op.gt]: new Date(), // Ensures ExpireAt > Current Time
-          },
-        },
-        include: [
-          {
-            model: User,
-            as: "user",
-            attributes: {
-              exclude: ["password"],
+      if (!otpCheck) {
+        const session = await Session.findOne({
+          where: {
+            userId: decoded.id,
+            token: hashToken(token),
+            expireAt: {
+              [Op.gt]: new Date(), // Ensures ExpireAt > Current Time
             },
           },
-        ],
-      });
+        });
 
-      if (!session) return res.status(401).json({ message: "Session expired!" });
+        if (!session) return res.status(401).json({ message: "Session expired!" });
+      }
 
-      req.user = session.user;
+      req.id = decoded.id;
       req.token = token;
       req.role = decoded.role;
       req.otp = decoded?.otp || undefined;
+      req.otpExp = decoded?.otpExp || undefined;
 
       return next();
     } catch (err) {

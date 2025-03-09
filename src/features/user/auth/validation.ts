@@ -24,3 +24,10 @@ export const userRegisterSchema = Joi.object({
     otherwise: Joi.optional(),
   }),
 });
+
+export const verifyOtpSchema = Joi.object({
+  otp: requiredStringField("otp").min(6).max(6).messages({
+    "string.min": "otp must be 6 digits long!",
+    "string.max": "otp must be 6 digits long!",
+  }),
+});

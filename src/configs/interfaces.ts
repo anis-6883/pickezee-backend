@@ -42,8 +42,9 @@ export interface ISession {
 }
 
 export interface IApiRequest extends Request {
-  user?: IUser;
+  id: string;
   otp?: string;
+  otpExp?: number;
   token?: string;
   result?: any;
   role: string;
