@@ -87,10 +87,10 @@ export const adminLogin = asyncHandler(async (req: IApiRequest, res: Response) =
  * @returns {Promise<void>} - A promise that resolves when the response is sent.
  */
 export const adminProfile = asyncHandler(async (req: IApiRequest, res: Response) => {
-  const user = await User.findOne({ where: { id: req.id }, attributes: { exclude: ["password"] } });
-  if (!user) return apiResponse(res, 404, true, "User not found!");
+  const data = await User.findOne({ where: { id: req.id }, attributes: { exclude: ["password"] } });
+  if (!data) return apiResponse(res, 404, true, "User not found!");
 
-  return apiResponse(res, 200, true, "Admin profile fetched successfully!", user);
+  return apiResponse(res, 200, true, "Admin profile fetched successfully!", data);
 });
 
 /**

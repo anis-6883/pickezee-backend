@@ -5,7 +5,7 @@ import { IApiRequest } from "../configs/interfaces";
 import { apiResponse, hashToken } from "../helpers";
 import Session from "../models/session";
 
-export const authAndPermission =
+export const authorize =
   (role: string | string[], checkPermission: boolean = true, otpCheck: boolean = false) =>
   async (req: IApiRequest, res: Response, next: NextFunction): Promise<any> => {
     try {
@@ -18,6 +18,8 @@ export const authAndPermission =
       if (checkPermission && !hasPermission) {
         return apiResponse(res, 403, false, "You are not authorized to perform this action!");
       }
+
+      console.log({ otpCheck });
 
       if (!otpCheck) {
         const session = await Session.findOne({
