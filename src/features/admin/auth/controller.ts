@@ -75,6 +75,7 @@ export const adminLogin = asyncHandler(async (req: IApiRequest, res: Response) =
   });
 
   const data = exclude(admin.dataValues, ["password"]);
+  if (data.image) data.image = `${process.env.IMAGE_BASE_URL}/${data.image}`;
   data.token = token;
 
   return apiResponse(res, 200, true, "Admin login successfully!", data);
@@ -90,6 +91,8 @@ export const adminProfile = asyncHandler(async (req: IApiRequest, res: Response)
   const data = await User.findOne({ where: { id: req.id }, attributes: { exclude: ["password"] } });
   if (!data) return apiResponse(res, 404, true, "User not found!");
 
+  if (data.image) data.image = `${process.env.IMAGE_BASE_URL}/${data.image}`;
+
   return apiResponse(res, 200, true, "Admin profile fetched successfully!", data);
 });
 
@@ -102,10 +105,10 @@ export const adminProfile = asyncHandler(async (req: IApiRequest, res: Response)
 export const updateAdminProfile = asyncHandler(async (req: IApiRequest, res: Response) => {
   const { softDeleted, ...updatedBody } = req.result;
 
-  const existingSuperAdmin = await User.findOne({
+  const existingAdmin = await User.findOne({
     where: { email: updatedBody?.email ?? "", id: { [Op.ne]: req.id } },
   });
-  if (existingSuperAdmin) return apiResponse(res, 409, false, "This email already exists!");
+  if (existingAdmin) return apiResponse(res, 409, false, "This email already exists!");
 
   // File Validation
   if (req.hasFile) {

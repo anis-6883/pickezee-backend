@@ -19,8 +19,6 @@ export const authorize =
         return apiResponse(res, 403, false, "You are not authorized to perform this action!");
       }
 
-      console.log({ otpCheck });
-
       if (!otpCheck) {
         const session = await Session.findOne({
           where: {
