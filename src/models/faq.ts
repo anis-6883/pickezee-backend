@@ -15,32 +15,32 @@ class FAQ extends Model<IFAQ, FAQCreationAttributes> implements IFAQ {
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
-}
 
-export const initializeFAQ = (sequelize: Sequelize) => {
-  FAQ.init(
-    {
-      id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true,
+  static initialize(sequelize: Sequelize) {
+    FAQ.init(
+      {
+        id: {
+          type: DataTypes.UUID,
+          defaultValue: DataTypes.UUIDV4,
+          primaryKey: true,
+        },
+        question: {
+          type: DataTypes.STRING(255),
+          allowNull: false,
+        },
+        answer: {
+          type: DataTypes.TEXT,
+          allowNull: false,
+        },
       },
-      question: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      answer: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-    },
-    {
-      modelName: "FAQ",
-      tableName: "faqs",
-      sequelize,
-    }
-  );
-  return FAQ;
-};
+      {
+        modelName: "FAQ",
+        tableName: "faqs",
+        sequelize,
+        timestamps: true,
+      }
+    );
+  }
+}
 
 export default FAQ;

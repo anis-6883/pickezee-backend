@@ -13,7 +13,7 @@ const startServer = async () => {
     const PORT = process.env.PORT || 8080;
     server.listen(PORT);
     console.log(`Server is running on port ${PORT}`);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error starting the server:", error.message);
     process.exit(1);
   }

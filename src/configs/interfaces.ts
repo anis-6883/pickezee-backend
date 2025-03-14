@@ -1,5 +1,4 @@
 import { Request } from "express";
-import mongoose from "mongoose";
 
 export interface IConfig {
   [key: string]: {
@@ -16,29 +15,56 @@ export interface IConfig {
 }
 
 export interface IUser {
-  _id: mongoose.Types.ObjectId;
-  name: string;
-  postalCode?: string;
-  city: string;
-  phone: string;
-  dialCode: string;
-  email: string;
-  password: string;
+  id: string;
   image: string;
+  name: string;
+  email: string;
+  password?: string;
+  emailVerified: boolean;
+  dialCode: string;
+  phone: string;
+  phoneVerified: boolean;
+  provider: "email" | "phone" | "google" | "facebook";
   status: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  provider: string;
+  role: "user" | "admin";
+  gender: "male" | "female" | "others" | "";
+  dob: Date;
+}
+
+export interface ISession {
+  id: string;
+  token: string;
+  userAgent: string;
+  ipAddress: string;
+  expireAt: Date;
+  lastSeen: Date;
+  userId: string;
 }
 
 export interface IApiRequest extends Request {
-  user?: IUser;
+  id: string;
   otp?: string;
+  otpExp?: number;
   token?: string;
+  result?: any;
   role: string;
+  hasFile?: boolean;
+  fileObject?: any;
 }
 
 export interface IJWTQuery {
-  email: string;
-  token?: string;
+  id: string;
+  token: string;
+}
+
+export interface GroupedSettings {
+  [group: string]: {
+    [name: string]: string;
+  };
+}
+
+export interface ICloudinaryResult {
+  status: boolean;
+  message: string;
+  public_id?: string | null;
 }

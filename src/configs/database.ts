@@ -1,19 +1,12 @@
-import mongoose from "mongoose";
 import { Sequelize } from "sequelize";
-
-export const connectToMongo = async (databaseURL: string) => {
-  try {
-    await mongoose.connect(databaseURL);
-    console.log("Connected to MongoDB Database!");
-  } catch (error) {
-    console.error("Error connecting to MongoDB:", error);
-    process.exit(1);
-  }
-};
 
 export const sequelize = new Sequelize(process.env.POSTGRES_URI, {
   dialect: "postgres",
   logging: false,
+  timezone: "UTC",
+  dialectOptions: {
+    useUTC: true,
+  },
 });
 
 export const connectToPostgres = async () => {
