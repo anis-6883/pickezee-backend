@@ -46,7 +46,7 @@ export const adminLogin = asyncHandler(async (req: IApiRequest, res: Response) =
   const ipAddress = req.ip;
 
   const admin = await User.findOne({ where: { email: result.email, status: true } });
-  if (!admin) return apiResponse(res, 401, false, "Invalid credentials!");
+  if (!admin) return apiResponse(res, 401, false, "Invalid email!");
 
   const isPasswordValid = await bcrypt.compare(result.password, admin.password);
   if (!isPasswordValid) return apiResponse(res, 401, false, "Invalid password!");

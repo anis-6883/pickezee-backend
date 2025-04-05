@@ -30,7 +30,7 @@ export const userRegister = asyncHandler(async (req: IApiRequest, res: Response)
 
   // Validation 1: Existing Verified Email
   if (existingUser && existingUser.emailVerified && result.provider === "email") {
-    return apiResponse(res, 409, false, "Please log in using the email and password you registered with!");
+    return apiResponse(res, 409, false, "This email already registered. Try to Log in!");
   }
 
   // Validation 2: Delete Un-verified Account
@@ -44,7 +44,7 @@ export const userRegister = asyncHandler(async (req: IApiRequest, res: Response)
   if (existingUser && existingUser.emailVerified && result.provider !== existingUser.provider) {
     const providerMessages: Record<string, string> = {
       google: "Your account was registered using Google. Please log in with Google!",
-      default: "Please log in using the email and password you registered with!",
+      default: "This email already registered. Try to Log in!",
     };
 
     const message = providerMessages[existingUser.provider] || providerMessages["default"];
@@ -192,8 +192,8 @@ export const userRegOtpVerify = asyncHandler(async (req: IApiRequest, res: Respo
   const token = generateSignature({ id: user.id, role: user.role }, 30 * 24 * 60 * 60);
   const hashedToken = hashToken(token);
 
-  const [data] = await Promise.all([
-    User.findOne({ where: { id: req.id }, attributes: { exclude: ["password"] } }),
+  const [userInfo] = await Promise.all([
+    User.findOne({ where: { id: req.id }, attributes: { exclude: ["password", "updatedAt"] } }),
     Session.create({
       userId: user.id,
       token: hashedToken,
@@ -204,7 +204,9 @@ export const userRegOtpVerify = asyncHandler(async (req: IApiRequest, res: Respo
     }),
   ]);
 
-  return apiResponse(res, 200, true, "OTP verified & Login successfully!", data);
+  const data = userInfo.get({ plain: true });
+
+  return apiResponse(res, 200, true, "OTP verified & Login successfully!", { ...data, token });
 });
 
 /**
@@ -250,7 +252,7 @@ export const userLogin = asyncHandler(async (req: IApiRequest, res: Response) =>
     expireAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days expiry
   });
 
-  const data = exclude(user.dataValues, ["password"]);
+  const data = exclude(user.dataValues, ["password", "updatedAt"]);
   data.token = token;
 
   return apiResponse(res, 200, true, "Login successfully!", data);
@@ -263,7 +265,7 @@ export const userLogin = asyncHandler(async (req: IApiRequest, res: Response) =>
  * @returns {Promise<void>} - A promise that resolves when the response is sent.
  */
 export const userProfile = asyncHandler(async (req: IApiRequest, res: Response) => {
-  const data = await User.findOne({ where: { id: req.id }, attributes: { exclude: ["password"] } });
+  const data = await User.findOne({ where: { id: req.id }, attributes: { exclude: ["password", "updatedAt"] } });
   if (!data) return apiResponse(res, 404, true, "User not found!");
 
   if (data.image) data.image = `${process.env.IMAGE_BASE_URL}/${data.image}`;
