@@ -41,14 +41,8 @@ export const userRegister = asyncHandler(async (req: IApiRequest, res: Response)
   }
 
   // Validation 3: Existing Verified Email with Another Provider
-  if (existingUser && existingUser.emailVerified && result.provider !== existingUser.provider) {
-    const providerMessages: Record<string, string> = {
-      google: "Your account was registered using Google. Please log in with Google!",
-      default: "This email already registered. Try to Log in!",
-    };
-
-    const message = providerMessages[existingUser.provider] || providerMessages["default"];
-    return apiResponse(res, 401, false, message);
+  if (existingUser && existingUser.emailVerified && existingUser.provider !== "email" && result.provider === "email") {
+    return apiResponse(res, 401, false, "Your account was registered using Google. Please log in with Google!");
   }
 
   // Process 1: Sign Up with Social Account
